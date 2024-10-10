@@ -15,7 +15,9 @@ const TodoList:React.FC = () => {
         setAddTaskInputVal, 
         addNewTaskHandler, 
         toggleCheckStatus,
-        deleteTodoHandler
+        deleteTodoHandler,
+        lastDeletedItem,
+        undoHandler
       } = useContext<TodoProps>(TodoContext)
     
     return(
@@ -73,11 +75,21 @@ const TodoList:React.FC = () => {
             />
 
             <button
-            className="w-full rounded-lg border px-4 py-2 bg-black text-gray-300 my-3"
+            className="w-full rounded-lg border px-4 py-2 bg-black text-gray-300 mt-3"
             onClick={addNewTaskHandler}
             >
                 Add Task
             </button>
+
+            {lastDeletedItem && 
+                <button
+                className="w-full rounded-lg border px-4 py-2 bg-zinc-300 disabled:bg-zinc-100 text-black my-3"
+                disabled={!lastDeletedItem}
+                onClick={undoHandler}
+                >
+                    Undo
+                </button>
+            }
         </div>
     )
 }

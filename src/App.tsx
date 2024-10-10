@@ -7,6 +7,11 @@ interface TodoItemProps{
   value: string
 }
 
+interface LastDeletedItemProps{
+  deletedItem: TodoItemProps,
+  index: number
+}
+
 export interface TodoProps{
   todos: TodoItemProps[],
   setTodos: (todo: TodoItemProps[]) => void,
@@ -18,7 +23,9 @@ export interface TodoProps{
   setFilter: (val: string) => void,
   addNewTaskHandler: () => void,
   toggleCheckStatus: (id:number) => void,
-  deleteTodoHandler: (id: number) => void
+  deleteTodoHandler: (id: number) => void,
+  lastDeletedItem: LastDeletedItemProps | null,
+  undoHandler: () => void
 }  
 
 export const TodoContext = createContext<TodoProps>(
@@ -33,7 +40,9 @@ export const TodoContext = createContext<TodoProps>(
     setFilter: () => {},
     addNewTaskHandler: () => {},
     toggleCheckStatus: () => {},
-    deleteTodoHandler: () => {}
+    deleteTodoHandler: () => {},
+    lastDeletedItem: null,
+    undoHandler: () => {}
   }
 )
 
@@ -43,6 +52,7 @@ const App:React.FC = () => {
   const [filter, setFilter] = useState<string>('all');
   const [addTaskInputVal, setAddTaskInputVal] = useState<string>('');
   const [idsList, setIdsList] = useState<number[]>([])
+  const [lastDeletedItem, setLastDeletedItem] = useState<LastDeletedItemProps | null>(null)
   
   //Add new todo task handler - 
   const addNewTaskHandler = () => {
@@ -65,6 +75,7 @@ const App:React.FC = () => {
       setTodos([...todos, newTask])
       setAddTaskInputVal('')
       localStorage.setItem('todos', JSON.stringify([...todos, newTask]))
+      setLastDeletedItem(null)
     }    
   }
 
@@ -82,13 +93,26 @@ const App:React.FC = () => {
 
   //Delete todo handler - 
   const deleteTodoHandler = (id:number) => {
+    let index = -1
+    let deletedItem = todos.find((todo:TodoItemProps, ind: number) => {
+      if(todo.id === id){
+        index = ind
+        return todo
+      }
+      return null
+    })
+    deletedItem && (index >= 0) && setLastDeletedItem({
+      deletedItem,
+      index
+    })
+    
     let updatedTodos = todos.filter((todo:TodoItemProps) => todo.id !== id)
     setTodos(updatedTodos)
     localStorage.setItem('todos', JSON.stringify(updatedTodos))
 
     let updatedIdsList = idsList.filter((i:number) => i !== id)
     setIdsList(updatedIdsList)
-    localStorage.setItem('idsList', JSON.stringify(updatedIdsList))
+    localStorage.setItem('idsList', JSON.stringify(updatedIdsList))    
   }
 
   //Search filter utility function - 
@@ -109,6 +133,17 @@ const App:React.FC = () => {
     // 1 sec debounce 
     let timerId = setTimeout(() => filterTodos(val), 1000);
     return () => clearTimeout(timerId);
+  }
+
+  //Undo handler
+  const undoHandler = () => {
+    if(lastDeletedItem && lastDeletedItem.deletedItem && lastDeletedItem.index >= 0){
+      let todosCopy = [...todos]
+      todosCopy.splice(lastDeletedItem.index, 0, lastDeletedItem.deletedItem)      
+      setTodos(todosCopy)
+      localStorage.setItem('todos', JSON.stringify(todosCopy))
+      setLastDeletedItem(null)
+    }
   }
 
   //Restoring todos data on page refresh
@@ -135,7 +170,9 @@ const App:React.FC = () => {
       setAddTaskInputVal, 
       addNewTaskHandler,
       toggleCheckStatus,
-      deleteTodoHandler
+      deleteTodoHandler,
+      lastDeletedItem,
+      undoHandler
     }}>
       <TodoList />
     </TodoContext.Provider>    
