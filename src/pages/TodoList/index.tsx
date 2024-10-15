@@ -21,8 +21,8 @@ const TodoList:React.FC = () => {
       } = useContext<TodoProps>(TodoContext)
     
     return(
-        <div className="mx-6 md:mx-56 my-16">
-            <div className="md:flex md:justify-between mb-4 w-full">
+        <div className="mx-6 min-[810px]:mx-56 my-16">
+            <div className="min-[810px]:flex md:justify-between mb-4 w-full">
                 <h1 className="text-2xl font-bold subpixel-antialiased">Today</h1>
                 <SearchInput 
                 value={searchVal} 

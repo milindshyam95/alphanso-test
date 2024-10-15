@@ -116,7 +116,7 @@ const App:React.FC = () => {
   }
 
   //Search filter utility function - 
-  const filterTodos = (val:string) => {
+  const filterTodos = (val:string) => {    
     let storedTodos = localStorage.getItem('todos')
     if(storedTodos){
       let parsedTodo = JSON.parse(storedTodos)
@@ -128,12 +128,12 @@ const App:React.FC = () => {
   }
 
   //Search input handler - 
-  const searchTodoHandler = (val:string) => {    
-    setSearchVal(val)
-    // 1 sec debounce 
-    let timerId = setTimeout(() => filterTodos(val), 1000);
+  const searchTodoHandler = (val:string) => setSearchVal(val)
+
+  useEffect(() => {
+    let timerId = setTimeout(() => filterTodos(searchVal), 1000);
     return () => clearTimeout(timerId);
-  }
+  }, [searchVal])
 
   //Undo handler
   const undoHandler = () => {
